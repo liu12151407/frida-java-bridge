@@ -8,8 +8,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import javax.crypto.Cipher;
 import java.io.IOException;
+import java.lang.UnsupportedOperationException;
+import javax.crypto.Cipher;
 
 public class MethodTest {
     @Rule
@@ -506,6 +507,18 @@ public class MethodTest {
         assertEquals("yes", script.getNextMessage());
     }
 
+    @Test
+    public void nativeMethodCanBeReplaced() {
+        loadScript("var Badger = Java.use('re.frida.Badger');" +
+                "Badger.nativeMethod.implementation = function (str) {" +
+                    "send(str);" +
+                "};");
+
+        Badger badger = new Badger();
+        badger.nativeMethod("randomString");
+        assertEquals("randomString", script.getNextMessage());
+    }
+
     private Script script = null;
 
     private void loadScript(String code) {
@@ -588,6 +601,8 @@ class Badger {
     public Badger() {
         id = nextId++;
     }
+
+    public native void nativeMethod(String arg);
 
     public void die() {
         throw new IllegalStateException("Already dead");

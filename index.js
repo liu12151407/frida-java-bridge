@@ -78,10 +78,12 @@ class Runtime {
     }
 
     const { vm } = this;
-    vm.perform(() => {
-      const env = vm.getEnv();
+    vm.perform(env => {
       ClassFactory._disposeAll(env);
       Env.dispose(env);
+    });
+    Script.nextTick(() => {
+      VM.dispose(vm);
     });
   }
 
@@ -206,7 +208,7 @@ class Runtime {
         return true;
       });
 
-      api['art::ClassLinker::VisitClasses'](api.artClassLinker, collectClassHandles);
+      api['art::ClassLinker::VisitClasses'](api.artClassLinker.address, collectClassHandles);
     });
 
     try {
@@ -243,7 +245,7 @@ class Runtime {
         return true;
       });
       withAllArtThreadsSuspended(() => {
-        visitClassLoaders(api.artClassLinker, collectLoaderHandles);
+        visitClassLoaders(api.artClassLinker.address, collectLoaderHandles);
       });
     });
 
